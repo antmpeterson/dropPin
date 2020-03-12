@@ -86,8 +86,8 @@
 					<h2>Please follow these instructions</h2>
 					<ol type = "1">
 						<li> Start with entering your location, State, and Zip Code at the top.</li>
-						<li> After, adding the pin use the yellow man as a street view to verify the pin is on your specified location.</li>
-						<li> Once the pin is where you like click the "Click to find out!" button this will display your address and correspoding coordinates.</li>
+						<li> After, adding the pin the address of your selcted location will display, use the yellow man as a street view to verify the pin is on your specified location.</li>
+						<li> Once the pin is where you like click the "Click to find out!" button this will display your correspoding coordinates.</li>
 					</ol>
 				</div>
 				<div>
@@ -104,7 +104,7 @@ export default {
     return {
       // default to Charlotte to keep it simple
      
-      center: { lat: 37.0902, lng: 95.7129 },
+      center: { lat: 35.2271, lng: -80.84312 },
       markers: [],
       places: [],
       currentPlace: null
@@ -120,6 +120,19 @@ export default {
     setPlace(place) {
       this.currentPlace = place;
     },
+	  reverseGeocode(coordinates){
+      const that = this;
+      axios
+        .get(`https://maps.google.com/maps/api/geocode/json?latlng=${coordinates.lat},${coordinates.lng}&key=${AIzaSyAgloUZh2Rba0RBLHaO_J-A_EEIQlG3m1A}`)
+          .then(response => {
+            console.log(response.data)
+        })
+        .catch(error => {
+          console.log(error)
+        })
+        .finally(() => this.loading = false)
+    },
+
     addMarker() {
       if (this.currentPlace) {
         const marker = {
@@ -129,6 +142,17 @@ export default {
         this.markers.push({ position: marker });
         this.places.push(this.currentPlace);
         this.center = marker;
+		var geocoder = new google.maps.Geocoder();
+		geocoder.geocode({'location': marker }, function(results, status){
+        if (status === 'OK') {
+          if (results[0]) {
+            alert ( "Selected address: " + results[0].formatted_address) ;
+          } else {
+            console.log(status);
+            window.alert('No results found');
+          }
+        }
+      })
         
 
       }
@@ -143,8 +167,9 @@ export default {
     },
      say: function () {
     if ('geolocation' in navigator) {
+
     navigator.geolocation.getCurrentPosition(
-      position => alert( "Lat: " + this.currentPlace.geometry.location.lat() + "\n" + "Lng: " + this.currentPlace.geometry.location.lng() ),
+      position => alert( "Lat: " + this.currentPlace.geometry.location.lat() + "\n" + "Lng: " + this.currentPlace.geometry.location.lng()),
       err => alert(`Error (${err.code}): ${err.message}`)
     );
   } else {
